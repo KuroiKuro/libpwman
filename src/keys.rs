@@ -5,7 +5,7 @@ use pbkdf2::{
 };
 use rand::rngs::OsRng;
 
-pub fn generate_pw_hash(password: &str) -> [u8; 256] {
+pub fn generate_pw_hash(password: &str) -> [u8; 32] {
     let salt = SaltString::generate(OsRng);
     let password_bytes = password.as_bytes();
     let hash_struct = match Pbkdf2.hash_password(password_bytes, &salt) {
@@ -18,7 +18,7 @@ pub fn generate_pw_hash(password: &str) -> [u8; 256] {
         None => panic!("Help"),
     };
     let bytes = hash.as_bytes();
-    let ret_bytes = &bytes[0..256];
+    let ret_bytes = &bytes[0..32];
     match ret_bytes.try_into() {
         Ok(ret_bytes) => ret_bytes,
         Err(e) => panic!("{}", e),
@@ -31,8 +31,8 @@ mod tests {
 
     #[test]
     fn test_generate_pw_hash() {
-        let password = "Hello12345";
+        let password = "hunter42";
         let arr = generate_pw_hash(password);
-        assert!(arr.len() == 256);
+        assert!(arr.len() == 32);
     }
 }
