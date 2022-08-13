@@ -1,6 +1,6 @@
 //! This module provides the functions required to generate keys from passwords
 use pbkdf2::{
-    password_hash::{errors, PasswordHash, PasswordHasher, SaltString},
+    password_hash::{PasswordHasher, SaltString},
     Pbkdf2,
 };
 use rand::rngs::OsRng;
