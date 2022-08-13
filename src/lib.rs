@@ -2,6 +2,7 @@
 //!
 //! Provides the actual functionality of the pwman password manager hobby project.
 
+pub mod database;
 pub mod keys;
 
 #[cfg(test)]
