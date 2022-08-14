@@ -5,6 +5,9 @@ use pbkdf2::{
 };
 use rand::rngs::OsRng;
 
+// Salt length is 22 bytes
+pub const SALT_LENGTH: usize = 22;
+
 /// A function to generate a SaltString struct, from the pbkdf2 crate
 pub fn generate_salt() -> SaltString {
     SaltString::generate(OsRng)
