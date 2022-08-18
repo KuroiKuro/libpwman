@@ -18,17 +18,20 @@ pub struct Aes256GcmCrypt {
 }
 
 impl Aes256GcmCrypt {
+    /// Create a new instance of Aes256GcmCrypt with a new randomly generated nonce
     pub fn new(key: Aes256KeyBytes) -> Aes256GcmCrypt {
         let mut nonce: Aes256GcmNonce = [];
         OsRng.fill_bytes(&nonce);
         Aes256GcmCrypt { nonce: nonce, key: key }
     }
 
+    /// Create a new instance of Aes256GcmCrypt with a pre-existing nonce
     pub fn from_nonce(key: Aes256KeyBytes, nonce: Aes256GcmNonce) -> Aes256GcmCrypt {
         Aes256GcmCrypt { nonce: nonce, key: key }
     }
 }
 
+/// This trait provides an interface for structs to provide encryption and decryption operations
 pub trait Crypt {
     fn encrypt(&self, plaintext: &str) -> Result<String, CryptError>;
     fn decrypt(&self, ciphertext: &str) -> Result<String, CryptError>;
