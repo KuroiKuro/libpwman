@@ -3,12 +3,11 @@ use rand::{rngs::OsRng, RngCore};
 
 pub enum CryptError {
     EncryptionError,
-    DecryptionError
+    DecryptionError,
 }
 
 pub type Aes256KeyBytes = [u8; 32];
 pub type Aes256GcmNonce = [u8; 12];
-
 
 /// A struct to assist with encrypting and decrypting with AES-256-GCM. Uses RustCrypto's
 /// `aes_gcm` crate
@@ -22,12 +21,18 @@ impl Aes256GcmCrypt {
     pub fn new(key: Aes256KeyBytes) -> Aes256GcmCrypt {
         let mut nonce: Aes256GcmNonce = [];
         OsRng.fill_bytes(&nonce);
-        Aes256GcmCrypt { nonce: nonce, key: key }
+        Aes256GcmCrypt {
+            nonce: nonce,
+            key: key,
+        }
     }
 
     /// Create a new instance of Aes256GcmCrypt with a pre-existing nonce
     pub fn from_nonce(key: Aes256KeyBytes, nonce: Aes256GcmNonce) -> Aes256GcmCrypt {
-        Aes256GcmCrypt { nonce: nonce, key: key }
+        Aes256GcmCrypt {
+            nonce: nonce,
+            key: key,
+        }
     }
 }
 
@@ -37,14 +42,13 @@ pub trait Crypt {
     fn decrypt(&self, ciphertext: &str) -> Result<String, CryptError>;
 }
 
-
 impl Crypt for Aes256GcmCrypt {
     /// Encrypts a plaintext with AES-256-GCM
     fn encrypt(&self, plaintext: &str) -> Result<String, CryptError> {
         let cipher = Aes256Gcm::new(&self.key);
         match cipher.encrypt(&self.nonce, plaintext) {
             Ok(result) => Ok(result.into()),
-            Err(_) => Err(CryptError::EncryptionError)
+            Err(_) => Err(CryptError::EncryptionError),
         }
     }
 
@@ -52,7 +56,7 @@ impl Crypt for Aes256GcmCrypt {
         let cipher = Aes256Gcm::new(&self.key);
         match cipher.decrypt(&self.nonce, ciphertext) {
             Ok(result) => Ok(result.into()),
-            Err(_) => Err(CryptError::DecryptionError)
+            Err(_) => Err(CryptError::DecryptionError),
         }
     }
 }
