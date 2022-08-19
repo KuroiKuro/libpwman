@@ -7,6 +7,8 @@ use rand::rngs::OsRng;
 
 // Salt length is 22 bytes
 pub const SALT_LENGTH: usize = 22;
+pub const KEY_LENGTH: usize = 32;
+pub type Aes256KeyBytes = [u8; KEY_LENGTH];
 
 /// A function to generate a SaltString struct, from the pbkdf2 crate
 pub fn generate_salt() -> SaltString {

@@ -9,9 +9,7 @@ pub enum CryptError {
     InvalidKeyLength,
 }
 
-pub const KEY_LENGTH: usize = 32;
 pub const NONCE_LENGTH: usize = 12;
-pub type Aes256KeyBytes = [u8; KEY_LENGTH];
 pub type Aes256GcmNonce = [u8; NONCE_LENGTH];
 
 /// A struct to assist with encrypting and decrypting with AES-256-GCM. Uses RustCrypto's
