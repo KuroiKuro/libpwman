@@ -8,8 +8,10 @@ pub enum CryptError {
     DecryptionError,
 }
 
-pub type Aes256KeyBytes = [u8; 32];
-pub type Aes256GcmNonce = [u8; 12];
+pub const KEY_LENGTH: usize = 32;
+pub const NONCE_LENGTH: usize = 12;
+pub type Aes256KeyBytes = [u8; KEY_LENGTH];
+pub type Aes256GcmNonce = [u8; NONCE_LENGTH];
 
 /// A struct to assist with encrypting and decrypting with AES-256-GCM. Uses RustCrypto's
 /// `aes_gcm` crate
@@ -21,8 +23,7 @@ pub struct Aes256GcmCrypt {
 impl Aes256GcmCrypt {
     /// Create a new instance of Aes256GcmCrypt with a new randomly generated nonce
     pub fn new(key: Aes256KeyBytes) -> Aes256GcmCrypt {
-        let mut nonce: Aes256GcmNonce = [0; 12];
-        OsRng.fill_bytes(&mut nonce);
+        let nonce: Aes256GcmNonce = Aes256GcmCrypt::generate_nonce();
         Aes256GcmCrypt {
             nonce: nonce,
             key: key,
@@ -35,6 +36,12 @@ impl Aes256GcmCrypt {
             nonce: nonce,
             key: key,
         }
+    }
+
+    pub fn generate_nonce() -> Aes256GcmNonce {
+        let mut nonce: Aes256GcmNonce = [0; 12];
+        OsRng.fill_bytes(&mut nonce);
+        nonce
     }
 }
 
@@ -73,7 +80,7 @@ impl Crypt for Aes256GcmCrypt {
 #[cfg(test)]
 mod tests {
     use pbkdf2::password_hash::SaltString;
-    use super::{Aes256KeyBytes, Aes256GcmCrypt, Crypt};
+    use super::{Aes256KeyBytes, Aes256GcmCrypt, Crypt, NONCE_LENGTH};
     use crate::keys::{generate_salt, get_key_bytes_from_pw};
 
     fn generate_key() -> (Aes256KeyBytes, SaltString) {
@@ -98,5 +105,11 @@ mod tests {
             Err(_) => panic!("Decryption encountered an error")
         };
         assert_eq!(plaintext.as_bytes(), decrypted_ciphertext);
+    }
+
+    #[test]
+    fn test_generate_nonce() {
+        let nonce = Aes256GcmCrypt::generate_nonce();
+        assert_eq!(nonce.len(), NONCE_LENGTH);
     }
 }
