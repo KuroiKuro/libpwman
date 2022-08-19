@@ -6,6 +6,7 @@ use std::str;
 pub enum CryptError {
     EncryptionError,
     DecryptionError,
+    InvalidKeyLength,
 }
 
 pub const KEY_LENGTH: usize = 32;
