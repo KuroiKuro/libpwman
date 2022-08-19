@@ -2,6 +2,7 @@ use aes_gcm::{aead::Aead, Aes256Gcm, KeyInit, Nonce};
 use rand::{rngs::OsRng, RngCore};
 use generic_array::GenericArray;
 use std::str;
+use crate::keys::Aes256KeyBytes;
 
 pub enum CryptError {
     EncryptionError,
