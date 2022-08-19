@@ -39,6 +39,7 @@ impl Aes256GcmCrypt {
         }
     }
 
+    /// Generate a nonce that can be used in the AES-256-GCM algorithm
     pub fn generate_nonce() -> Aes256GcmNonce {
         let mut nonce: Aes256GcmNonce = [0; 12];
         OsRng.fill_bytes(&mut nonce);
@@ -48,7 +49,9 @@ impl Aes256GcmCrypt {
 
 /// This trait provides an interface for structs to provide encryption and decryption operations
 pub trait Crypt {
+    /// Encrypt a plaintext password and output the bytes
     fn encrypt(&self, plaintext: &str) -> Result<Vec<u8>, CryptError>;
+    /// Decrypt a ciphertext password and output the bytes
     fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, CryptError>;
 }
 
@@ -65,6 +68,7 @@ impl Crypt for Aes256GcmCrypt {
         }
     }
 
+    /// Decrypts a plaintext with AES-256-GCM
     fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, CryptError> {
         let key = GenericArray::from_slice(&self.key);
         let cipher = Aes256Gcm::new(key);
