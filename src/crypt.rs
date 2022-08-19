@@ -22,11 +22,11 @@ pub struct Aes256GcmCrypt {
 
 impl Aes256GcmCrypt {
     /// Create a new instance of Aes256GcmCrypt with a new randomly generated nonce
-    pub fn new(key: Aes256KeyBytes) -> Aes256GcmCrypt {
+    pub fn new(key: &Aes256KeyBytes) -> Aes256GcmCrypt {
         let nonce: Aes256GcmNonce = Aes256GcmCrypt::generate_nonce();
         Aes256GcmCrypt {
             nonce: nonce,
-            key: key,
+            key: *key,
         }
     }
 
@@ -92,7 +92,7 @@ mod tests {
     #[test]
     fn test_aes256gcmcrypt_crypt() {
         let (key, salt) = generate_key();
-        let crypt = Aes256GcmCrypt::new(key);
+        let crypt = Aes256GcmCrypt::new(&key);
 
         // Test that after encryption and decryption, we get the same value
         let plaintext = "I am Malenia, Blade of Miquella";
