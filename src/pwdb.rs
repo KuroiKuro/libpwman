@@ -59,12 +59,12 @@ impl PasswordEntry {
             None => HashMap::new(),
         };
         PasswordEntry {
-            title: title,
-            enc_password: enc_password,
-            username: username,
-            urls: urls,
-            notes: notes,
-            custom_fields: save_custom_fields,
+            title,
+            enc_password,
+            username,
+            urls,
+            notes,
+            custom_fields,
             nonce: Aes256GcmCrypt::generate_nonce(),
         }
     }
