@@ -46,6 +46,7 @@ impl PasswordEntry {
             nonce: Aes256GcmCrypt::generate_nonce(),
         }
     }
+    /// Create a new instance of `PasswordEntry` with the arguments saved as data in the new entry
     pub fn new_from_args(
         title: Option<String>,
         enc_password: Option<Vec<u8>>,
@@ -77,7 +78,9 @@ impl Default for PasswordEntry {
 }
 
 /// This trait is for structs that can encrypt and decrypt a password that it stores. For
-/// example, one can refer to the PasswordEntry struct to see how it can be used in practice
+/// example, one can refer to the PasswordEntry struct to see how it can be used in practice.
+/// Implement this trait for any custom structs that are intended to replace the default
+/// `PasswordEntry` struct for use in password databases
 pub trait PasswordEntryCrypt {
     /// Types implementing this trait will use the `save_password` method to save a plaintext
     /// password into self in an encrypted form. The `enc_key` argument is intentionally left as a
@@ -95,6 +98,7 @@ pub trait PasswordEntryCrypt {
 }
 
 impl PasswordEntryCrypt for PasswordEntry {
+    /// Save a given password into the PasswordEntry instance
     fn save_password(&mut self, password: &str, enc_key: &[u8]) -> Result<(), PasswordEntryError> {
         // Create the key array, based on coercing the enc_key slice into an array of the length
         // required for an AES-256 key
@@ -122,6 +126,8 @@ impl PasswordEntryCrypt for PasswordEntry {
         Ok(())
     }
 
+    /// Retrieve and decrypt the saved password from the PasswordEntry instance. If there is no
+    /// password currently saved, `None` will be returned
     fn get_password(&self, enc_key: &[u8]) -> Result<Option<String>, PasswordEntryError> {
         // If there is no key saved in the struct, then return None
         let enc_password = match &self.enc_password {

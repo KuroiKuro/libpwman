@@ -23,18 +23,12 @@ impl Aes256GcmCrypt {
     /// Create a new instance of Aes256GcmCrypt with a new randomly generated nonce
     pub fn new(key: &Aes256KeyBytes) -> Aes256GcmCrypt {
         let nonce: Aes256GcmNonce = Aes256GcmCrypt::generate_nonce();
-        Aes256GcmCrypt {
-            nonce,
-            key: *key,
-        }
+        Aes256GcmCrypt { nonce, key: *key }
     }
 
     /// Create a new instance of Aes256GcmCrypt with a pre-existing nonce
     pub fn from_nonce(key: Aes256KeyBytes, nonce: Aes256GcmNonce) -> Aes256GcmCrypt {
-        Aes256GcmCrypt {
-            nonce,
-            key,
-        }
+        Aes256GcmCrypt { nonce, key }
     }
 
     /// Generate a nonce that can be used in the AES-256-GCM algorithm
