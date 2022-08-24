@@ -93,7 +93,7 @@ mod tests {
 
     #[test]
     fn test_aes256gcmcrypt_crypt() {
-        let (key, salt) = generate_key();
+        let (key, _salt) = generate_key();
         let crypt = Aes256GcmCrypt::new(&key);
 
         // Test that after encryption and decryption, we get the same value

@@ -111,7 +111,7 @@ impl PasswordEntryCrypt for PasswordEntry {
         let crypt = Aes256GcmCrypt::new(&key);
         let ciphertext = match crypt.encrypt(password) {
             Ok(data) => data,
-            Err(e) => {
+            Err(_e) => {
                 return Err(PasswordEntryError::CryptError {
                     e: CryptError::EncryptionError,
                 })
@@ -142,9 +142,9 @@ impl PasswordEntryCrypt for PasswordEntry {
 
         // Initialize the cipher object and decrypt the password
         let crypt = Aes256GcmCrypt::new(&key);
-        let plaintext = match crypt.decrypt(&enc_password) {
+        let plaintext = match crypt.decrypt(enc_password) {
             Ok(data) => data,
-            Err(e) => {
+            Err(_e) => {
                 return Err(PasswordEntryError::CryptError {
                     e: CryptError::DecryptionError,
                 })
