@@ -21,7 +21,12 @@ pub enum PasswordEntryError {
 /// a password, such as the username etc. The password that is saved in the struct will be
 /// encrypted, and should be decrypted on demand. The implementation of PasswordEntry in this
 /// crate makes use of AES-256-GCM to encrypt and decrypt the password. A new nonce is generated
-/// for each PasswordEntry created
+/// for each PasswordEntry created.
+/// 
+/// Note that the fields apart from the actual password fields are public fields here. This is to
+/// allow access to them without any API methods, which will be very simple getter and setters
+/// anyway. This will allow custom struct types that replace PasswordEntry to be easily dropped
+/// in to custom code that can access different fields directly without an API
 pub struct PasswordEntry {
     pub title: Option<String>,
     enc_password: Option<Vec<u8>>,
@@ -153,7 +158,8 @@ impl PasswordEntryCrypt for PasswordEntry {
         };
 
         // Initialize the cipher object and decrypt the password
-        let crypt = Self::CryptType::new(&key);
+        let nonce: Aes256GcmNonce = self.nonce.clone();
+        let crypt = Self::CryptType::from_nonce(key, nonce);
         let plaintext = match crypt.decrypt(enc_password) {
             Ok(data) => data,
             Err(_e) => {
