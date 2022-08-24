@@ -1,8 +1,8 @@
-use aes_gcm::{aead::Aead, Aes256Gcm, KeyInit, Nonce};
-use rand::{rngs::OsRng, RngCore};
-use generic_array::GenericArray;
-use std::str;
 use crate::keys::Aes256KeyBytes;
+use aes_gcm::{aead::Aead, Aes256Gcm, KeyInit, Nonce};
+use generic_array::GenericArray;
+use rand::{rngs::OsRng, RngCore};
+use std::str;
 
 pub enum CryptError {
     EncryptionError,
@@ -79,12 +79,11 @@ impl Crypt for Aes256GcmCrypt {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-    use pbkdf2::password_hash::SaltString;
-    use super::{Aes256KeyBytes, Aes256GcmCrypt, Crypt, NONCE_LENGTH};
+    use super::{Aes256GcmCrypt, Aes256KeyBytes, Crypt, NONCE_LENGTH};
     use crate::keys::{generate_salt, get_key_bytes_from_pw};
+    use pbkdf2::password_hash::SaltString;
 
     fn generate_key() -> (Aes256KeyBytes, SaltString) {
         let salt = generate_salt();
@@ -101,11 +100,11 @@ mod tests {
         let plaintext = "I am Malenia, Blade of Miquella";
         let ciphertext = match crypt.encrypt(plaintext) {
             Ok(ciphertext) => ciphertext,
-            Err(_) => panic!("Encryption encountered an error")
+            Err(_) => panic!("Encryption encountered an error"),
         };
         let decrypted_ciphertext = match crypt.decrypt(&ciphertext) {
             Ok(text) => text,
-            Err(_) => panic!("Decryption encountered an error")
+            Err(_) => panic!("Decryption encountered an error"),
         };
         assert_eq!(plaintext.as_bytes(), decrypted_ciphertext);
     }

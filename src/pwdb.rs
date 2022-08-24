@@ -1,7 +1,7 @@
 //! This module provides the functionality for the password database
 
-use crate::crypt::{Aes256GcmCrypt, CryptError, Aes256GcmNonce, Crypt};
-use crate::keys::{Aes256KeyBytes, coerce_slice_to_key_array, KeyError};
+use crate::crypt::{Aes256GcmCrypt, Aes256GcmNonce, Crypt, CryptError};
+use crate::keys::{coerce_slice_to_key_array, Aes256KeyBytes, KeyError};
 use std::collections::HashMap;
 use std::str;
 
@@ -10,10 +10,10 @@ pub const DB_VERSION: &str = "0.1";
 /// Enum to represent possible errors when saving or retrieving passwords from the PasswordEntry
 /// struct
 pub enum PasswordEntryError {
-    CryptError {e: CryptError},
-    KeyError {e: KeyError},
+    CryptError { e: CryptError },
+    KeyError { e: KeyError },
     PasswordSaveError,
-    PasswordEncodingError
+    PasswordEncodingError,
 }
 
 /// A struct representing a password entry in the password database. A PasswordEntry
@@ -100,14 +100,22 @@ impl PasswordEntryCrypt for PasswordEntry {
         // required for an AES-256 key
         let key: Aes256KeyBytes = match coerce_slice_to_key_array(enc_key) {
             Ok(key) => key,
-            Err(_) => return Err(PasswordEntryError::KeyError { e: KeyError::InvalidKeyLength })
+            Err(_) => {
+                return Err(PasswordEntryError::KeyError {
+                    e: KeyError::InvalidKeyLength,
+                })
+            }
         };
 
         // Initialize the cipher object and encrypt the password
         let crypt = Aes256GcmCrypt::new(&key);
         let ciphertext = match crypt.encrypt(password) {
             Ok(data) => data,
-            Err(e) => return Err(PasswordEntryError::CryptError { e: CryptError::EncryptionError })
+            Err(e) => {
+                return Err(PasswordEntryError::CryptError {
+                    e: CryptError::EncryptionError,
+                })
+            }
         };
 
         self.enc_password = Some(ciphertext);
@@ -118,26 +126,34 @@ impl PasswordEntryCrypt for PasswordEntry {
         // If there is no key saved in the struct, then return None
         let enc_password = match &self.enc_password {
             Some(password) => password,
-            None => return Ok(None)
+            None => return Ok(None),
         };
 
         // Create the key array, based on coercing the enc_key slice into an array of the length
         // required for an AES-256 key
         let key: Aes256KeyBytes = match coerce_slice_to_key_array(enc_key) {
             Ok(key) => key,
-            Err(_) => return Err(PasswordEntryError::KeyError { e: KeyError::InvalidKeyLength })
+            Err(_) => {
+                return Err(PasswordEntryError::KeyError {
+                    e: KeyError::InvalidKeyLength,
+                })
+            }
         };
 
         // Initialize the cipher object and decrypt the password
         let crypt = Aes256GcmCrypt::new(&key);
         let plaintext = match crypt.decrypt(&enc_password) {
             Ok(data) => data,
-            Err(e) => return Err(PasswordEntryError::CryptError { e: CryptError::DecryptionError })
+            Err(e) => {
+                return Err(PasswordEntryError::CryptError {
+                    e: CryptError::DecryptionError,
+                })
+            }
         };
 
         let password_string = match str::from_utf8(&plaintext) {
             Ok(pw) => pw,
-            Err(_) => return Err(PasswordEntryError::PasswordEncodingError)
+            Err(_) => return Err(PasswordEntryError::PasswordEncodingError),
         };
 
         Ok(Some(password_string.to_owned()))

@@ -3,8 +3,8 @@
 //! Provides the actual functionality of the pwman password manager hobby project.
 
 pub mod crypt;
-pub mod pwdb;
 pub mod keys;
+pub mod pwdb;
 
 #[cfg(test)]
 mod tests {

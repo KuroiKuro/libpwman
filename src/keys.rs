@@ -11,7 +11,7 @@ pub const KEY_LENGTH: usize = 32;
 pub type Aes256KeyBytes = [u8; KEY_LENGTH];
 
 pub enum KeyError {
-    InvalidKeyLength
+    InvalidKeyLength,
 }
 
 /// A function to generate a SaltString struct, from the pbkdf2 crate
@@ -40,11 +40,10 @@ pub fn get_key_bytes_from_pw(password: &str, salt: &SaltString) -> [u8; 32] {
     }
 }
 
-
 pub fn coerce_slice_to_key_array(slice: &[u8]) -> Result<Aes256KeyBytes, KeyError> {
     let key: Aes256KeyBytes = match slice.try_into() {
         Ok(key) => key,
-        Err(_) => return Err(KeyError::InvalidKeyLength)
+        Err(_) => return Err(KeyError::InvalidKeyLength),
     };
     Ok(key)
 }
