@@ -23,12 +23,12 @@ pub enum PasswordEntryError {
 /// crate makes use of AES-256-GCM to encrypt and decrypt the password. A new nonce is generated
 /// for each PasswordEntry created
 pub struct PasswordEntry {
-    title: Option<String>,
+    pub title: Option<String>,
     enc_password: Option<Vec<u8>>,
-    username: Option<String>,
-    urls: Option<Vec<String>>,
-    notes: Option<String>,
-    custom_fields: HashMap<String, String>,
+    pub username: Option<String>,
+    pub urls: Option<Vec<String>>,
+    pub notes: Option<String>,
+    pub custom_fields: HashMap<String, String>,
     // Nonce info, used for encryption and decryption with AES-256-GCM
     nonce: Aes256GcmNonce,
 }
@@ -82,6 +82,10 @@ impl Default for PasswordEntry {
 /// Implement this trait for any custom structs that are intended to replace the default
 /// `PasswordEntry` struct for use in password databases
 pub trait PasswordEntryCrypt {
+    /// A type that implements the Crypt trait. This can be used in the implementations of the
+    /// trait methods for encryption and decryption purposes
+    type CryptType: Crypt;
+
     /// Types implementing this trait will use the `save_password` method to save a plaintext
     /// password into self in an encrypted form. The `enc_key` argument is intentionally left as a
     /// slice of indeterminate length to allow types to implement the encryption using keys of a
@@ -98,6 +102,8 @@ pub trait PasswordEntryCrypt {
 }
 
 impl PasswordEntryCrypt for PasswordEntry {
+    type CryptType = Aes256GcmCrypt;
+
     /// Save a given password into the PasswordEntry instance
     fn save_password(&mut self, password: &str, enc_key: &[u8]) -> Result<(), PasswordEntryError> {
         // Create the key array, based on coercing the enc_key slice into an array of the length
@@ -112,7 +118,7 @@ impl PasswordEntryCrypt for PasswordEntry {
         };
 
         // Initialize the cipher object and encrypt the password
-        let crypt = Aes256GcmCrypt::new(&key);
+        let crypt = Self::CryptType::new(&key);
         let ciphertext = match crypt.encrypt(password) {
             Ok(data) => data,
             Err(_e) => {
@@ -147,7 +153,7 @@ impl PasswordEntryCrypt for PasswordEntry {
         };
 
         // Initialize the cipher object and decrypt the password
-        let crypt = Aes256GcmCrypt::new(&key);
+        let crypt = Self::CryptType::new(&key);
         let plaintext = match crypt.decrypt(enc_password) {
             Ok(data) => data,
             Err(_e) => {
