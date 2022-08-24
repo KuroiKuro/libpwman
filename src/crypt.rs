@@ -24,7 +24,7 @@ impl Aes256GcmCrypt {
     pub fn new(key: &Aes256KeyBytes) -> Aes256GcmCrypt {
         let nonce: Aes256GcmNonce = Aes256GcmCrypt::generate_nonce();
         Aes256GcmCrypt {
-            nonce: nonce,
+            nonce,
             key: *key,
         }
     }
@@ -32,8 +32,8 @@ impl Aes256GcmCrypt {
     /// Create a new instance of Aes256GcmCrypt with a pre-existing nonce
     pub fn from_nonce(key: Aes256KeyBytes, nonce: Aes256GcmNonce) -> Aes256GcmCrypt {
         Aes256GcmCrypt {
-            nonce: nonce,
-            key: key,
+            nonce,
+            key,
         }
     }
 

@@ -64,7 +64,7 @@ impl PasswordEntry {
             username,
             urls,
             notes,
-            custom_fields,
+            custom_fields: save_custom_fields,
             nonce: Aes256GcmCrypt::generate_nonce(),
         }
     }
