@@ -9,6 +9,7 @@ pub const DB_VERSION: &str = "0.1";
 
 /// Enum to represent possible errors when saving or retrieving passwords from the `PasswordEntry`
 /// struct
+#[derive(Debug)]
 pub enum PasswordEntryError {
     CryptError { e: CryptError },
     KeyError { e: KeyError },
@@ -159,7 +160,7 @@ impl PasswordEntryCrypt for PasswordEntry {
 
         // Initialize the cipher object and decrypt the password
         let nonce: Aes256GcmNonce = self.nonce;
-        let crypt = Self::CryptType::from_nonce(key, nonce);
+        let crypt = Self::CryptType::from_nonce(&key, nonce);
         let plaintext = match crypt.decrypt(enc_password) {
             Ok(data) => data,
             Err(_e) => {
@@ -199,6 +200,8 @@ impl PasswordEntryCrypt for PasswordEntry {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::keys::{generate_salt, get_key_bytes_from_pw, SaltString};
+    use hex;
 
     #[test]
     fn test_passwordentry_new() {
@@ -266,6 +269,29 @@ mod tests {
         match entry.custom_fields.get("field2") {
             Some(value) => assert_eq!(value, "value2"),
             None => panic!("Custom fields missing field 'field2'"),
+        };
+    }
+
+    #[test]
+    fn test_passwordentry_passwordentrycrypt_impl() {
+        // let db_password = "password";
+        // let salt = generate_salt();
+        // let key = get_key_bytes_from_pw(&db_password, &salt);
+        let key_str = "ef9df26e93a662fd1b7e4701e9bc53927e833daff3be2bb67425a99506491";
+        let key = match hex::decode(key_str) {
+            Ok(key) => key,
+            Err(_) => panic!("error decode key"),
+        };
+
+        let mut entry = PasswordEntry::new();
+        let password = "clouddistrict9999";
+        if let Err(e) = entry.save_password(password, &key) {
+            panic!("Saving password failed with an error: {:?}", e);
+        };
+
+        match entry.get_password(&key) {
+            Ok(retrieved_pw) => assert_eq!(retrieved_pw, Some(password.to_string())),
+            Err(e) =>  panic!("Retrieve password failed with an error: {:?}", e)
         };
     }
 }
