@@ -4,6 +4,7 @@ use generic_array::GenericArray;
 use rand::{rngs::OsRng, RngCore};
 use std::str;
 
+#[derive(Debug)]
 pub enum CryptError {
     EncryptionError,
     DecryptionError,
@@ -27,8 +28,8 @@ impl Aes256GcmCrypt {
     }
 
     /// Create a new instance of Aes256GcmCrypt with a pre-existing nonce
-    pub fn from_nonce(key: Aes256KeyBytes, nonce: Aes256GcmNonce) -> Aes256GcmCrypt {
-        Aes256GcmCrypt { nonce, key }
+    pub fn from_nonce(key: &Aes256KeyBytes, nonce: Aes256GcmNonce) -> Aes256GcmCrypt {
+        Aes256GcmCrypt { nonce, key: *key }
     }
 
     /// Generate a nonce that can be used in the AES-256-GCM algorithm
@@ -68,7 +69,10 @@ impl Crypt for Aes256GcmCrypt {
 
         match cipher.decrypt(nonce, ciphertext) {
             Ok(result) => Ok(result),
-            Err(_) => Err(CryptError::DecryptionError),
+            Err(e) => {
+                let err_msg = format!("{}", e);
+                Err(CryptError::DecryptionError)
+            },
         }
     }
 }
@@ -96,7 +100,10 @@ mod tests {
             Ok(ciphertext) => ciphertext,
             Err(_) => panic!("Encryption encountered an error"),
         };
-        let decrypted_ciphertext = match crypt.decrypt(&ciphertext) {
+
+        let nonce = crypt.nonce;
+        let new_crypt = Aes256GcmCrypt::from_nonce(&key, nonce);
+        let decrypted_ciphertext = match new_crypt.decrypt(&ciphertext) {
             Ok(text) => text,
             Err(_) => panic!("Decryption encountered an error"),
         };
