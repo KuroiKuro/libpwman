@@ -1,8 +1,9 @@
 //! This module provides the functions required to generate keys from passwords
 use pbkdf2::{
-    password_hash::{PasswordHasher, SaltString},
+    password_hash::PasswordHasher,
     Pbkdf2,
 };
+pub use pbkdf2::password_hash::SaltString;
 use rand::rngs::OsRng;
 
 // Salt length is 22 bytes
@@ -10,6 +11,7 @@ pub const SALT_LENGTH: usize = 22;
 pub const KEY_LENGTH: usize = 32;
 pub type Aes256KeyBytes = [u8; KEY_LENGTH];
 
+#[derive(Debug)]
 pub enum KeyError {
     InvalidKeyLength,
 }
