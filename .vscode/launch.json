@@ -8,6 +8,7 @@
             "type": "lldb",
             "request": "launch",
             "name": "Debug unit tests in library 'libpwman'",
+            "sourceLanguages": ["rust"],
             "cargo": {
                 "args": [
                     "test",
