@@ -7,7 +7,7 @@ use std::str;
 
 pub const DB_VERSION: &str = "0.1";
 
-/// Enum to represent possible errors when saving or retrieving passwords from the PasswordEntry
+/// Enum to represent possible errors when saving or retrieving passwords from the `PasswordEntry`
 /// struct
 pub enum PasswordEntryError {
     CryptError { e: CryptError },
@@ -16,16 +16,16 @@ pub enum PasswordEntryError {
     PasswordEncodingError,
 }
 
-/// A struct representing a password entry in the password database. A PasswordEntry
+/// A struct representing a password entry in the password database. A `PasswordEntry`
 /// contains all the relevant information that a user would desire to store together with
 /// a password, such as the username etc. The password that is saved in the struct will be
-/// encrypted, and should be decrypted on demand. The implementation of PasswordEntry in this
-/// crate makes use of AES-256-GCM to encrypt and decrypt the password. A new nonce is generated
-/// for each PasswordEntry created.
-/// 
+/// encrypted, and should be decrypted on demand. The implementation of `PasswordEntry` in this
+/// crate makes use of `AES-256-GCM` to encrypt and decrypt the password. A new nonce is generated
+/// for each `PasswordEntry` created.
+///
 /// Note that the fields apart from the actual password fields are public fields here. This is to
 /// allow access to them without any API methods, which will be very simple getter and setters
-/// anyway. This will allow custom struct types that replace PasswordEntry to be easily dropped
+/// anyway. This will allow custom struct types that replace `PasswordEntry` to be easily dropped
 /// in to custom code that can access different fields directly without an API
 pub struct PasswordEntry {
     pub title: Option<String>,
@@ -158,7 +158,7 @@ impl PasswordEntryCrypt for PasswordEntry {
         };
 
         // Initialize the cipher object and decrypt the password
-        let nonce: Aes256GcmNonce = self.nonce.clone();
+        let nonce: Aes256GcmNonce = self.nonce;
         let crypt = Self::CryptType::from_nonce(key, nonce);
         let plaintext = match crypt.decrypt(enc_password) {
             Ok(data) => data,
@@ -198,10 +198,74 @@ impl PasswordEntryCrypt for PasswordEntry {
 
 #[cfg(test)]
 mod tests {
-    // use super::PasswordDb;
+    use super::*;
 
-    // #[test]
-    // fn test_new() {
-    //     PasswordDb::new("test");
-    // }
+    #[test]
+    fn test_passwordentry_new() {
+        let entry = PasswordEntry::new();
+        assert_eq!(entry.title, None);
+        assert_eq!(entry.username, None);
+        assert_eq!(entry.enc_password, None);
+        assert_eq!(entry.urls, None);
+        assert_eq!(entry.notes, None);
+
+        // Test custom fields
+        assert_eq!(entry.custom_fields.len(), 0);
+        // Test that a new nonce was generated
+        let entry2 = PasswordEntry::new();
+        assert_ne!(entry.nonce, entry2.nonce);
+    }
+
+    #[test]
+    fn test_passwordentry_new_with_args() {
+        let title = "Golden Order".to_string();
+        let username = "goldmask".to_string();
+        let urls = vec![
+            "https://facebook.com".to_string(),
+            "https://twitter.com".to_string(),
+        ];
+        let notes = "Burning the Erdtree is the first cardinal sin".to_string();
+        let mut custom_fields: HashMap<String, String> = HashMap::new();
+        custom_fields.insert("field1".to_string(), "value1".to_string());
+        custom_fields.insert("field2".to_string(), "value2".to_string());
+
+        let entry = PasswordEntry::new_from_args(
+            Some(title.clone()),
+            None,
+            Some(username.clone()),
+            Some(urls.clone()),
+            Some(notes.clone()),
+            Some(custom_fields.clone()),
+        );
+
+        assert_eq!(entry.title, Some(title));
+        assert_eq!(entry.username, Some(username));
+        assert_eq!(entry.notes, Some(notes));
+        if let Some(entry_urls) = entry.urls {
+            assert_eq!(entry_urls[0], "https://facebook.com");
+            assert_eq!(entry_urls[1], "https://twitter.com");
+        }
+
+        let field1_count = entry
+            .custom_fields
+            .keys()
+            .filter(|key| *key == "field1")
+            .count();
+        let field2_count = entry
+            .custom_fields
+            .keys()
+            .filter(|key| *key == "field2")
+            .count();
+        assert_eq!(field1_count, 1);
+        assert_eq!(field2_count, 1);
+
+        match entry.custom_fields.get("field1") {
+            Some(value) => assert_eq!(value, "value1"),
+            None => panic!("Custom fields missing field 'field1'"),
+        };
+        match entry.custom_fields.get("field2") {
+            Some(value) => assert_eq!(value, "value2"),
+            None => panic!("Custom fields missing field 'field2'"),
+        };
+    }
 }
