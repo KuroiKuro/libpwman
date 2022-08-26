@@ -1,7 +1,9 @@
 //! This module provides the functionality for the password database
 
 use crate::crypt::{Aes256GcmCrypt, Aes256GcmNonce, Crypt, CryptError};
-use crate::keys::{coerce_slice_to_key_array, Aes256KeyBytes, KeyError};
+use crate::keys::{
+    coerce_slice_to_key_array, generate_salt, get_key_bytes_from_pw, Aes256KeyBytes, KeyError,
+};
 use std::collections::HashMap;
 use std::str;
 
@@ -124,14 +126,12 @@ impl PasswordEntryCrypt for PasswordEntry {
         };
 
         // Initialize the cipher object and encrypt the password
-        let crypt = Self::CryptType::new(&key);
-        let ciphertext = match crypt.encrypt(password) {
-            Ok(data) => data,
-            Err(_e) => {
-                return Err(PasswordEntryError::CryptError {
-                    e: CryptError::EncryptionError,
-                })
-            }
+        let crypt = Self::CryptType::from_nonce(&key, &self.nonce);
+
+        let plaintext = password;
+        let ciphertext = match crypt.encrypt(plaintext) {
+            Ok(ciphertext) => ciphertext,
+            Err(_) => panic!("Encryption encountered an error"),
         };
 
         self.enc_password = Some(ciphertext);
@@ -141,7 +141,6 @@ impl PasswordEntryCrypt for PasswordEntry {
     /// Retrieve and decrypt the saved password from the PasswordEntry instance. If there is no
     /// password currently saved, `None` will be returned
     fn get_password(&self, enc_key: &[u8]) -> Result<Option<String>, PasswordEntryError> {
-        // If there is no key saved in the struct, then return None
         let enc_password = match &self.enc_password {
             Some(password) => password,
             None => return Ok(None),
@@ -160,7 +159,7 @@ impl PasswordEntryCrypt for PasswordEntry {
 
         // Initialize the cipher object and decrypt the password
         let nonce: Aes256GcmNonce = self.nonce;
-        let crypt = Self::CryptType::from_nonce(&key, nonce);
+        let crypt = Self::CryptType::from_nonce(&key, &nonce);
         let plaintext = match crypt.decrypt(enc_password) {
             Ok(data) => data,
             Err(_e) => {
@@ -200,8 +199,7 @@ impl PasswordEntryCrypt for PasswordEntry {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::keys::{generate_salt, get_key_bytes_from_pw, SaltString};
-    use hex;
+    use crate::keys::{generate_salt, get_key_bytes_from_pw};
 
     #[test]
     fn test_passwordentry_new() {
@@ -274,14 +272,9 @@ mod tests {
 
     #[test]
     fn test_passwordentry_passwordentrycrypt_impl() {
-        // let db_password = "password";
-        // let salt = generate_salt();
-        // let key = get_key_bytes_from_pw(&db_password, &salt);
-        let key_str = "ef9df26e93a662fd1b7e4701e9bc53927e833daff3be2bb67425a99506491";
-        let key = match hex::decode(key_str) {
-            Ok(key) => key,
-            Err(_) => panic!("error decode key"),
-        };
+        let db_password = "password";
+        let salt = generate_salt();
+        let key = get_key_bytes_from_pw(&db_password, &salt);
 
         let mut entry = PasswordEntry::new();
         let password = "clouddistrict9999";
@@ -291,7 +284,7 @@ mod tests {
 
         match entry.get_password(&key) {
             Ok(retrieved_pw) => assert_eq!(retrieved_pw, Some(password.to_string())),
-            Err(e) =>  panic!("Retrieve password failed with an error: {:?}", e)
+            Err(e) => panic!("Retrieve password failed with an error: {:?}", e),
         };
     }
 }

@@ -1,9 +1,6 @@
 //! This module provides the functions required to generate keys from passwords
-use pbkdf2::{
-    password_hash::PasswordHasher,
-    Pbkdf2,
-};
 pub use pbkdf2::password_hash::SaltString;
+use pbkdf2::{password_hash::PasswordHasher, Pbkdf2};
 use rand::rngs::OsRng;
 
 // Salt length is 22 bytes

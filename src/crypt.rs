@@ -28,8 +28,11 @@ impl Aes256GcmCrypt {
     }
 
     /// Create a new instance of Aes256GcmCrypt with a pre-existing nonce
-    pub fn from_nonce(key: &Aes256KeyBytes, nonce: Aes256GcmNonce) -> Aes256GcmCrypt {
-        Aes256GcmCrypt { nonce, key: *key }
+    pub fn from_nonce(key: &Aes256KeyBytes, nonce: &Aes256GcmNonce) -> Aes256GcmCrypt {
+        Aes256GcmCrypt {
+            nonce: *nonce,
+            key: *key,
+        }
     }
 
     /// Generate a nonce that can be used in the AES-256-GCM algorithm
@@ -69,10 +72,7 @@ impl Crypt for Aes256GcmCrypt {
 
         match cipher.decrypt(nonce, ciphertext) {
             Ok(result) => Ok(result),
-            Err(e) => {
-                let err_msg = format!("{}", e);
-                Err(CryptError::DecryptionError)
-            },
+            Err(e) => Err(CryptError::DecryptionError),
         }
     }
 }
@@ -102,7 +102,7 @@ mod tests {
         };
 
         let nonce = crypt.nonce;
-        let new_crypt = Aes256GcmCrypt::from_nonce(&key, nonce);
+        let new_crypt = Aes256GcmCrypt::from_nonce(&key, &nonce);
         let decrypted_ciphertext = match new_crypt.decrypt(&ciphertext) {
             Ok(text) => text,
             Err(_) => panic!("Decryption encountered an error"),
