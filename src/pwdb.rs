@@ -1,9 +1,7 @@
 //! This module provides the functionality for the password database
 
 use crate::crypt::{Aes256GcmCrypt, Aes256GcmNonce, Crypt, CryptError};
-use crate::keys::{
-    coerce_slice_to_key_array, Aes256KeyBytes, KeyError,
-};
+use crate::keys;
 use std::collections::HashMap;
 use std::str;
 
@@ -14,7 +12,7 @@ pub const DB_VERSION: &str = "0.1";
 #[derive(Debug)]
 pub enum PasswordEntryError {
     CryptError { e: CryptError },
-    KeyError { e: KeyError },
+    KeyError { e: keys::KeyError },
     PasswordSaveError,
     PasswordEncodingError,
 }
@@ -116,11 +114,11 @@ impl PasswordEntryCrypt for PasswordEntry {
     fn save_password(&mut self, password: &str, enc_key: &[u8]) -> Result<(), PasswordEntryError> {
         // Create the key array, based on coercing the enc_key slice into an array of the length
         // required for an AES-256 key
-        let key: Aes256KeyBytes = match coerce_slice_to_key_array(enc_key) {
+        let key: keys::Aes256KeyBytes = match keys::coerce_slice_to_key_array(enc_key) {
             Ok(key) => key,
             Err(_) => {
                 return Err(PasswordEntryError::KeyError {
-                    e: KeyError::InvalidKeyLength,
+                    e: keys::KeyError::InvalidKeyLength,
                 })
             }
         };
@@ -148,11 +146,11 @@ impl PasswordEntryCrypt for PasswordEntry {
 
         // Create the key array, based on coercing the enc_key slice into an array of the length
         // required for an AES-256 key
-        let key: Aes256KeyBytes = match coerce_slice_to_key_array(enc_key) {
+        let key: keys::Aes256KeyBytes = match keys::coerce_slice_to_key_array(enc_key) {
             Ok(key) => key,
             Err(_) => {
                 return Err(PasswordEntryError::KeyError {
-                    e: KeyError::InvalidKeyLength,
+                    e: keys::KeyError::InvalidKeyLength,
                 })
             }
         };
@@ -178,13 +176,31 @@ impl PasswordEntryCrypt for PasswordEntry {
     }
 }
 
-// pub struct PasswordDb {
-//     key: [u8; 32],
-//     salt: [u8; SALT_LENGTH],
-//     // Placeholder first, replace with a better datastructure
-//     passwords: HashMap<u32, PasswordEntry>,
-//     db_version: String,
-// }
+pub struct PassDb<T: PasswordEntryCrypt> {
+    key: [u8; keys::KEY_LENGTH],
+    salt: [u8; keys::SALT_LENGTH],
+    // Placeholder first, replace with a better datastructure
+    passwords: Vec<T>,
+    db_version: String,
+}
+
+impl PassDb<PasswordEntry> {
+    pub fn new(db_password: &str) -> PassDb<PasswordEntry> {
+        // TODO: Fix db_version setting after creating db file spec
+        let salt = keys::generate_salt();
+        let key = keys::get_key_bytes_from_pw(db_password, &salt);
+        let salt_arr: [u8; keys::SALT_LENGTH] = match salt.as_bytes().try_into() {
+            Ok(salt_arr) => salt_arr,
+            Err(e) => panic!("Failed to convert salt to bytes! (Error: {})", e)
+        };
+        PassDb { key: key, salt: salt_arr, passwords: Vec::new(), db_version: DB_VERSION.to_string() }
+    }
+
+    // pub fn rebuild(key: [u8; keys::KEY_LENGTH], salt: [u8; keys::SALT_LENGTH]) -> PassDb<PasswordEntry> {
+    //     // TODO: Fix db_version setting after creating db file spec
+    //     PassDb { key: key, salt: salt, passwords: Vec::new(), db_version: DB_VERSION.to_string() }
+    // }
+}
 
 // impl PasswordDb {
 //     fn new(db_password: &str) {
@@ -286,5 +302,11 @@ mod tests {
             Ok(retrieved_pw) => assert_eq!(retrieved_pw, Some(password.to_string())),
             Err(e) => panic!("Retrieve password failed with an error: {:?}", e),
         };
+    }
+
+    #[test]
+    fn test_passdb_new() {
+        // Test that creating new PassDb instance does not panic
+        PassDb::new("testpw");
     }
 }
