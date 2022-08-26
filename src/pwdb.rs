@@ -197,7 +197,9 @@ impl PassDb<PassEntry> {
     /// to derive a new key from the given password. Use this if you're creating a brand new
     /// database for the first time
     /// ```rust
-    /// let new_db: PassDb = PassDb::new("my_example_password");
+    /// use libpwman::pwdb::{PassDb, PassEntry};
+    /// 
+    /// let new_db: PassDb<PassEntry> = PassDb::new("my_example_password");
     /// ```
     pub fn new(db_password: &str) -> PassDb<PassEntry> {
         // TODO: Fix db_version setting after creating db file spec
