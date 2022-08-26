@@ -17,18 +17,18 @@ pub enum PasswordEntryError {
     PasswordEncodingError,
 }
 
-/// A struct representing a password entry in the password database. A `PasswordEntry`
+/// A struct representing a password entry in the password database. A `PassEntry`
 /// contains all the relevant information that a user would desire to store together with
 /// a password, such as the username etc. The password that is saved in the struct will be
-/// encrypted, and should be decrypted on demand. The implementation of `PasswordEntry` in this
+/// encrypted, and should be decrypted on demand. The implementation of `PassEntry` in this
 /// crate makes use of `AES-256-GCM` to encrypt and decrypt the password. A new nonce is generated
-/// for each `PasswordEntry` created.
+/// for each `PassEntry` created.
 ///
 /// Note that the fields apart from the actual password fields are public fields here. This is to
 /// allow access to them without any API methods, which will be very simple getter and setters
-/// anyway. This will allow custom struct types that replace `PasswordEntry` to be easily dropped
+/// anyway. This will allow custom struct types that replace `PassEntry` to be easily dropped
 /// in to custom code that can access different fields directly without an API
-pub struct PasswordEntry {
+pub struct PassEntry {
     pub title: Option<String>,
     enc_password: Option<Vec<u8>>,
     pub username: Option<String>,
@@ -39,10 +39,10 @@ pub struct PasswordEntry {
     nonce: Aes256GcmNonce,
 }
 
-impl PasswordEntry {
-    /// Generate a new empty `PasswordEntry`
-    pub fn new() -> PasswordEntry {
-        PasswordEntry {
+impl PassEntry {
+    /// Generate a new empty `PassEntry`
+    pub fn new() -> PassEntry {
+        PassEntry {
             title: None,
             enc_password: None,
             username: None,
@@ -52,7 +52,7 @@ impl PasswordEntry {
             nonce: Aes256GcmCrypt::generate_nonce(),
         }
     }
-    /// Create a new instance of `PasswordEntry` with the arguments saved as data in the new entry
+    /// Create a new instance of `PassEntry` with the arguments saved as data in the new entry
     pub fn new_from_args(
         title: Option<String>,
         enc_password: Option<Vec<u8>>,
@@ -60,12 +60,12 @@ impl PasswordEntry {
         urls: Option<Vec<String>>,
         notes: Option<String>,
         custom_fields: Option<HashMap<String, String>>,
-    ) -> PasswordEntry {
+    ) -> PassEntry {
         let save_custom_fields = match custom_fields {
             Some(custom_fields) => custom_fields,
             None => HashMap::new(),
         };
-        PasswordEntry {
+        PassEntry {
             title,
             enc_password,
             username,
@@ -77,17 +77,17 @@ impl PasswordEntry {
     }
 }
 
-impl Default for PasswordEntry {
+impl Default for PassEntry {
     fn default() -> Self {
-        PasswordEntry::new()
+        PassEntry::new()
     }
 }
 
 /// This trait is for structs that can encrypt and decrypt a password that it stores. For
-/// example, one can refer to the PasswordEntry struct to see how it can be used in practice.
+/// example, one can refer to the `PassEntry` struct to see how it can be used in practice.
 /// Implement this trait for any custom structs that are intended to replace the default
-/// `PasswordEntry` struct for use in password databases
-pub trait PasswordEntryCrypt {
+/// `PassEntry` struct for use in password databases
+pub trait PasswordEntry {
     /// A type that implements the Crypt trait. This can be used in the implementations of the
     /// trait methods for encryption and decryption purposes
     type CryptType: Crypt;
@@ -107,10 +107,10 @@ pub trait PasswordEntryCrypt {
     fn get_password(&self, enc_key: &[u8]) -> Result<Option<String>, PasswordEntryError>;
 }
 
-impl PasswordEntryCrypt for PasswordEntry {
+impl PasswordEntry for PassEntry {
     type CryptType = Aes256GcmCrypt;
 
-    /// Save a given password into the PasswordEntry instance
+    /// Save a given password into the `PassEntry` instance
     fn save_password(&mut self, password: &str, enc_key: &[u8]) -> Result<(), PasswordEntryError> {
         // Create the key array, based on coercing the enc_key slice into an array of the length
         // required for an AES-256 key
@@ -136,7 +136,7 @@ impl PasswordEntryCrypt for PasswordEntry {
         Ok(())
     }
 
-    /// Retrieve and decrypt the saved password from the PasswordEntry instance. If there is no
+    /// Retrieve and decrypt the saved password from the `PassEntry` instance. If there is no
     /// password currently saved, `None` will be returned
     fn get_password(&self, enc_key: &[u8]) -> Result<Option<String>, PasswordEntryError> {
         let enc_password = match &self.enc_password {
@@ -184,7 +184,7 @@ impl PasswordEntryCrypt for PasswordEntry {
 /// 
 /// PassDb supports a generic type `T`, which can be any type that implements `PasswordEntryCrypt`.
 /// The default implementation provided by `libpwman` implements `T` as `PasswordEntry`.
-pub struct PassDb<T: PasswordEntryCrypt> {
+pub struct PassDb<T: PasswordEntry> {
     key: [u8; keys::KEY_LENGTH],
     salt: [u8; keys::SALT_LENGTH],
     // Placeholder first, replace with a better datastructure
@@ -192,14 +192,14 @@ pub struct PassDb<T: PasswordEntryCrypt> {
     db_version: String,
 }
 
-impl PassDb<PasswordEntry> {
+impl PassDb<PassEntry> {
     /// Create a new empty instance of `PassDb`. This will generate a new salt, and use the salt
     /// to derive a new key from the given password. Use this if you're creating a brand new
     /// database for the first time
     /// ```rust
     /// let new_db: PassDb = PassDb::new("my_example_password");
     /// ```
-    pub fn new(db_password: &str) -> PassDb<PasswordEntry> {
+    pub fn new(db_password: &str) -> PassDb<PassEntry> {
         // TODO: Fix db_version setting after creating db file spec
         let salt = keys::generate_salt();
         let key = keys::get_key_bytes_from_pw(db_password, &salt);
@@ -232,8 +232,8 @@ mod tests {
     use crate::keys::{generate_salt, get_key_bytes_from_pw};
 
     #[test]
-    fn test_passwordentry_new() {
-        let entry = PasswordEntry::new();
+    fn test_passentry_new() {
+        let entry = PassEntry::new();
         assert_eq!(entry.title, None);
         assert_eq!(entry.username, None);
         assert_eq!(entry.enc_password, None);
@@ -243,12 +243,12 @@ mod tests {
         // Test custom fields
         assert_eq!(entry.custom_fields.len(), 0);
         // Test that a new nonce was generated
-        let entry2 = PasswordEntry::new();
+        let entry2 = PassEntry::new();
         assert_ne!(entry.nonce, entry2.nonce);
     }
 
     #[test]
-    fn test_passwordentry_new_with_args() {
+    fn test_passentry_new_with_args() {
         let title = "Golden Order".to_string();
         let username = "goldmask".to_string();
         let urls = vec![
@@ -260,7 +260,7 @@ mod tests {
         custom_fields.insert("field1".to_string(), "value1".to_string());
         custom_fields.insert("field2".to_string(), "value2".to_string());
 
-        let entry = PasswordEntry::new_from_args(
+        let entry = PassEntry::new_from_args(
             Some(title.clone()),
             None,
             Some(username.clone()),
@@ -301,12 +301,12 @@ mod tests {
     }
 
     #[test]
-    fn test_passwordentry_passwordentrycrypt_impl() {
+    fn test_passentry_passwordentrycrypt_impl() {
         let db_password = "password";
         let salt = generate_salt();
         let key = get_key_bytes_from_pw(db_password, &salt);
 
-        let mut entry = PasswordEntry::new();
+        let mut entry = PassEntry::new();
         let password = "clouddistrict9999";
         if let Err(e) = entry.save_password(password, &key) {
             panic!("Saving password failed with an error: {:?}", e);
