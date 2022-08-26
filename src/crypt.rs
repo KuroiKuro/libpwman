@@ -72,7 +72,7 @@ impl Crypt for Aes256GcmCrypt {
 
         match cipher.decrypt(nonce, ciphertext) {
             Ok(result) => Ok(result),
-            Err(e) => Err(CryptError::DecryptionError),
+            Err(_e) => Err(CryptError::DecryptionError),
         }
     }
 }

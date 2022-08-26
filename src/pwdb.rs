@@ -2,7 +2,7 @@
 
 use crate::crypt::{Aes256GcmCrypt, Aes256GcmNonce, Crypt, CryptError};
 use crate::keys::{
-    coerce_slice_to_key_array, generate_salt, get_key_bytes_from_pw, Aes256KeyBytes, KeyError,
+    coerce_slice_to_key_array, Aes256KeyBytes, KeyError,
 };
 use std::collections::HashMap;
 use std::str;
@@ -234,7 +234,7 @@ mod tests {
             Some(title.clone()),
             None,
             Some(username.clone()),
-            Some(urls.clone()),
+            Some(urls),
             Some(notes.clone()),
             Some(custom_fields.clone()),
         );
@@ -274,7 +274,7 @@ mod tests {
     fn test_passwordentry_passwordentrycrypt_impl() {
         let db_password = "password";
         let salt = generate_salt();
-        let key = get_key_bytes_from_pw(&db_password, &salt);
+        let key = get_key_bytes_from_pw(db_password, &salt);
 
         let mut entry = PasswordEntry::new();
         let password = "clouddistrict9999";
