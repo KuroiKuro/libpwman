@@ -176,6 +176,14 @@ impl PasswordEntryCrypt for PasswordEntry {
     }
 }
 
+
+/// The `PassDb` struct represents an instance of a password database in `pwman`. The password
+/// database is the datastructure containing the passwords that a user wishes to save. All entries
+/// in the database are encrypted and decrypted using the same key per database, which is derived
+/// from the password that a user supplies when creating a new, empty `PassDb` instance.
+/// 
+/// PassDb supports a generic type `T`, which can be any type that implements `PasswordEntryCrypt`.
+/// The default implementation provided by `libpwman` implements `T` as `PasswordEntry`.
 pub struct PassDb<T: PasswordEntryCrypt> {
     key: [u8; keys::KEY_LENGTH],
     salt: [u8; keys::SALT_LENGTH],
@@ -185,6 +193,12 @@ pub struct PassDb<T: PasswordEntryCrypt> {
 }
 
 impl PassDb<PasswordEntry> {
+    /// Create a new empty instance of `PassDb`. This will generate a new salt, and use the salt
+    /// to derive a new key from the given password. Use this if you're creating a brand new
+    /// database for the first time
+    /// ```rust
+    /// let new_db: PassDb = PassDb::new("my_example_password");
+    /// ```
     pub fn new(db_password: &str) -> PassDb<PasswordEntry> {
         // TODO: Fix db_version setting after creating db file spec
         let salt = keys::generate_salt();
