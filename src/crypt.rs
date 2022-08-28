@@ -1,16 +1,25 @@
+//! This module provides the functionality related to encryption and decryption
+//! 
+//! `libpwman` uses the `AES-256-GCM` symmetric encryption algorithm. Different encryption
+//! algorithms may be used as well, however it will require developers to implement the relevant
+//! traits themselves
+
 use crate::keys::Aes256KeyBytes;
 use aes_gcm::{aead::Aead, Aes256Gcm, KeyInit, Nonce};
 use generic_array::GenericArray;
 use rand::{rngs::OsRng, RngCore};
 use std::str;
 
+/// An enum representing the possible error states encountered during encryption and decryption.
 #[derive(Debug)]
 pub enum CryptError {
     EncryptionError,
     DecryptionError,
 }
 
+/// The length of the nonce for `AES-256-GCM`, as the number of bytes.
 pub const NONCE_LENGTH: usize = 12;
+/// Type representing an array of bytes with the length of the nonce.
 pub type Aes256GcmNonce = [u8; NONCE_LENGTH];
 
 /// A struct to assist with encrypting and decrypting with AES-256-GCM. Uses RustCrypto's
@@ -44,6 +53,8 @@ impl Aes256GcmCrypt {
 }
 
 /// This trait provides an interface for structs to provide encryption and decryption operations
+/// 
+/// Different encryption algorithms may be supported by implementing this trait for them.
 pub trait Crypt {
     /// Encrypt a plaintext password and output the bytes
     fn encrypt(&self, plaintext: &str) -> Result<Vec<u8>, CryptError>;
