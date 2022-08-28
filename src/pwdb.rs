@@ -212,6 +212,7 @@ impl PassDb<PassEntry> {
         PassDb { key: key, salt: salt_arr, passwords: Vec::new(), db_version: DB_VERSION.to_string() }
     }
 
+    /// Rebuild a `PassDb` that was previously created before from its key, salt and password entries
     pub fn rebuild(key: [u8; keys::KEY_LENGTH], salt: [u8; keys::SALT_LENGTH], password_entries: Vec<PassEntry>) -> PassDb<PassEntry> {
         // TODO: Fix db_version setting after creating db file spec
         PassDb { key: key, salt: salt, passwords: password_entries, db_version: DB_VERSION.to_string() }
