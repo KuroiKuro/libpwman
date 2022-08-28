@@ -27,6 +27,7 @@ pub enum PasswordEntryError {
 /// allow access to them without any API methods, which will be very simple getter and setters
 /// anyway. This will allow custom struct types that replace `PassEntry` to be easily dropped
 /// in to custom code that can access different fields directly without an API
+#[derive(Clone)]
 pub struct PassEntry {
     pub title: Option<String>,
     enc_password: Option<Vec<u8>>,
