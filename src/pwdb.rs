@@ -212,10 +212,11 @@ impl PassDb<PassEntry> {
         PassDb { key: key, salt: salt_arr, passwords: Vec::new(), db_version: DB_VERSION.to_string() }
     }
 
-    // pub fn rebuild(key: [u8; keys::KEY_LENGTH], salt: [u8; keys::SALT_LENGTH]) -> PassDb<PasswordEntry> {
-    //     // TODO: Fix db_version setting after creating db file spec
-    //     PassDb { key: key, salt: salt, passwords: Vec::new(), db_version: DB_VERSION.to_string() }
-    // }
+    pub fn rebuild(key: [u8; keys::KEY_LENGTH], salt: [u8; keys::SALT_LENGTH], password_entries: Box<[PassEntry]>) -> PassDb<PassEntry> {
+        // TODO: Fix db_version setting after creating db file spec
+        let password_vec = Vec::from(password_entries);
+        PassDb { key: key, salt: salt, passwords: password_vec, db_version: DB_VERSION.to_string() }
+    }
 }
 
 // impl PasswordDb {
