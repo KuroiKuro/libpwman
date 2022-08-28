@@ -41,7 +41,7 @@ impl PassDb<PassEntry> {
             Err(e) => panic!("Failed to convert salt to bytes! (Error: {})", e),
         };
         PassDb {
-            key: key,
+            key,
             salt: salt_arr,
             passwords: Vec::new(),
             db_version: DB_VERSION.to_string(),
@@ -56,8 +56,8 @@ impl PassDb<PassEntry> {
     ) -> PassDb<PassEntry> {
         // TODO: Fix db_version setting after creating db file spec
         PassDb {
-            key: key,
-            salt: salt,
+            key,
+            salt,
             passwords: password_entries,
             db_version: DB_VERSION.to_string(),
         }
