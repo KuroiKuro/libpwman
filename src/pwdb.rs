@@ -5,7 +5,7 @@ use crate::keys;
 use std::collections::HashMap;
 use std::str;
 
-pub const DB_VERSION: &str = "0.1";
+pub const DB_VERSION: &str = "1.1";
 
 /// Enum to represent possible errors when saving or retrieving passwords from the `PasswordEntry`
 /// struct
@@ -212,22 +212,12 @@ impl PassDb<PassEntry> {
         PassDb { key: key, salt: salt_arr, passwords: Vec::new(), db_version: DB_VERSION.to_string() }
     }
 
-    pub fn rebuild(key: [u8; keys::KEY_LENGTH], salt: [u8; keys::SALT_LENGTH], password_entries: Box<[PassEntry]>) -> PassDb<PassEntry> {
+    pub fn rebuild(key: [u8; keys::KEY_LENGTH], salt: [u8; keys::SALT_LENGTH], password_entries: Vec<PassEntry>) -> PassDb<PassEntry> {
         // TODO: Fix db_version setting after creating db file spec
-        let password_vec = Vec::from(password_entries);
-        PassDb { key: key, salt: salt, passwords: password_vec, db_version: DB_VERSION.to_string() }
+        PassDb { key: key, salt: salt, passwords: password_entries, db_version: DB_VERSION.to_string() }
     }
 }
 
-// impl PasswordDb {
-//     fn new(db_password: &str) {
-//         let salt = generate_salt();
-//         let key_bytes = get_key_bytes_from_pw(db_password, &salt);
-//         let salt_len = salt.as_bytes().len();
-//         panic!("salt_len =  {}", salt_len);
-//         // let salt_str =
-//     }
-// }
 
 #[cfg(test)]
 mod tests {
@@ -325,5 +315,46 @@ mod tests {
     fn test_passdb_new() {
         // Test that creating new PassDb instance does not panic
         PassDb::new("testpw");
+    }
+
+    #[test]
+    fn test_passdb_rebuild() {
+        // Test that we can reuse the same key and salt that was created in a new PassDb
+        // instance to rebuild it from scratch
+        let new_db = PassDb::new("hastings1066");
+        let key = new_db.key;
+        let salt = new_db.salt;
+
+        let passwords = [
+            ("title0", "password0"),
+            ("title1", "password1"),
+            ("title2", "password2"),
+        ];
+        let mut passwords_vec: Vec<PassEntry> = Vec::new();
+        for (password_title, password) in passwords {
+            let mut pass_entry = PassEntry::new();
+            pass_entry.title = Some(password_title.to_string());
+            match pass_entry.save_password(password, &key) {
+                Ok(_) => (),
+                Err(e) => panic!("Failed to save password due to {:?}", e)
+            };
+            passwords_vec.push(pass_entry);
+        }
+
+        let rebuilt_db = PassDb::rebuild(key, salt, passwords_vec);
+        assert_eq!(rebuilt_db.passwords.len(), 3);
+        for (i, password) in rebuilt_db.passwords.iter().enumerate() {
+            let (original_title, original_password) = passwords[i];
+            let saved_title = match &password.title {
+                Some(title) => title,
+                None => panic!("Title was not saved!")
+            };
+            assert_eq!(saved_title, original_title);
+            let saved_password = match password.get_password(&key) {
+                Ok(password) => password.unwrap(),
+                Err(e) => panic!("Failed to decrypt password: {:?}", e)
+            };
+            assert_eq!(saved_password, original_password);
+        }
     }
 }
