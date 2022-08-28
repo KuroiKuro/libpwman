@@ -15,9 +15,10 @@ pub enum PasswordEntryError {
     PasswordEncodingError,
 }
 
-/// A struct representing a password entry in the password database. A `PassEntry`
-/// contains all the relevant information that a user would desire to store together with
-/// a password, such as the username etc. The password that is saved in the struct will be
+/// A struct representing a password entry in the password database.
+/// 
+/// A `PassEntry` contains all the relevant information that a user would desire to store together
+/// with a password, such as the username etc. The password that is saved in the struct will be
 /// encrypted, and should be decrypted on demand. The implementation of `PassEntry` in this
 /// crate makes use of `AES-256-GCM` to encrypt and decrypt the password. A new nonce is generated
 /// for each `PassEntry` created.
@@ -83,6 +84,7 @@ impl Default for PassEntry {
 
 /// This trait is for structs that can encrypt and decrypt a password that it stores. For
 /// example, one can refer to the `PassEntry` struct to see how it can be used in practice.
+/// 
 /// Implement this trait for any custom structs that are intended to replace the default
 /// `PassEntry` struct for use in password databases
 pub trait PasswordEntry {

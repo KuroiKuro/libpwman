@@ -3,6 +3,7 @@
 use crate::pwdb::passentry::PasswordEntry;
 
 /// A handler type that handles saving and retrieving of the various password entries.
+/// 
 /// Encapsulating this behaviour in this type allows for flexibility when working with the
 /// password database file, such as allowing either loading all the passwords from the file into
 /// memory, or to allow reading of the password data of a specific entry from the database file

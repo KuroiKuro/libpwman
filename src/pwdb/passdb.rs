@@ -6,10 +6,12 @@ use crate::keys;
 
 pub const DB_VERSION: &str = "1.1";
 
-/// The `PassDb` struct represents an instance of a password database in `pwman`. The password
-/// database is the datastructure containing the passwords that a user wishes to save. All entries
-/// in the database are encrypted and decrypted using the same key per database, which is derived
-/// from the password that a user supplies when creating a new, empty `PassDb` instance.
+/// The `PassDb` struct represents an instance of a password database in `pwman` which is the
+/// datastructure containing the passwords that a user wishes to save.
+/// 
+/// All entries in the database are encrypted and decrypted using the same key per database, 
+/// which is derived from the password that a user supplies when creating a new, empty
+/// `PassDb` instance.
 /// 
 /// PassDb supports a generic type `T`, which can be any type that implements `PasswordEntryCrypt`.
 /// The default implementation provided by `libpwman` implements `T` as `PasswordEntry`.
