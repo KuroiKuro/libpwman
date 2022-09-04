@@ -70,6 +70,13 @@ Each password entry will include the following metadata information at the start
 
 4. The ID of the entry. The ID of the entry is a UUID4 that is stored as bytes. This will allow unique identification of the entry when it needs to be updated in the file.
 
+|             Name           |Number of bytes|    Value    |
+|----------------------------|---------------|-------------|
+|Password entry start marker |4              |`E0 9D 19 14`|
+|Offset to the next entry    |8              |Variable     |
+|SHA256 Checksum of the entry|32             |Variable     |
+|Entry ID (UUID4)            |16             |Variable     |
+
 ### Password Entry Data
 
 The rest of the entry will contain the actual password and related information of the entry, such as the title, URLs etc. All of these information will be encrypted as well to prevent snooping.
@@ -88,21 +95,47 @@ The rest of the entry will contain the actual password and related information o
 
 7. The length of the encrypted notes (8 bytes).
 
-8. The number of URLs (4 bytes). The data structure of 9 and 10 will be repeated for each of the URLs that are saved. If the number is 0, then the application should skip the parsing of URLs.
+8. The encrypted notes.
 
-9. The length of the encrypted URL (8 bytes).
+9. The number of URLs (4 bytes). The data structure of 9 and 10 will be repeated for each of the URLs that are saved. If the number is 0, then the application should skip the parsing of URLs.
 
-10. The encrypted URL.
+10. The length of the encrypted URL (8 bytes).
 
-11. The number of custom fields (4 bytes). The data structure of 12 ,13 will be repeated for each custom field. If the number is 0, then the application should skip the parsing of custom fields.
+11. The encrypted URL.
 
-12. The length of the encrypted name of the custom field (8 bytes).
+12. The number of custom fields (4 bytes). The data structure of 13, 14, 15 and 16 will be repeated for each custom field. If the number is 0, then the application should skip the parsing of custom fields.
 
-13. The encrypted name of the custom field.
+13. The length of the encrypted name of the custom field (8 bytes).
 
-14. The length of the encrypted value of the custom field (8 bytes).
+14. The encrypted name of the custom field.
 
-15. The encrypted value of the custom field.
+15. The length of the encrypted value of the custom field (8 bytes).
+
+16. The encrypted value of the custom field.
+
+|                Name               |Number of bytes|    Value    |
+|-----------------------------------|---------------|-------------|
+|Encrypted title length             |8              |Variable     |
+|Encrypted title                    |Variable       |Variable     |
+|Encrypted password length          |8              |Variable     |
+|Encrypted password                 |Variable       |Variable     |
+|Encrypted username length          |8              |Variable     |
+|Encrypted username                 |Variable       |Variable     |
+|Encrypted notes length             |8              |Variable     |
+|Encrypted notes                    |Variable       |Variable     |
+|The number of URLs                 |4              |Variable     |
+|Encrypted URL length               |8              |Variable     |
+|Encrypted URL                      |Variable       |Variable     |
+|The number of Custom Fields        |4              |Variable     |
+|Encrypted Custom Field Name length |8              |Variable     |
+|Encrypted Custom Field Name        |Variable       |Variable     |
+|Encrypted Custom Field Value length|8              |Variable     |
+|Encrypted Custom Field Value       |Variable       |Variable     |
 
 ### End Entry
+
 At the end of each password entry, the bytes `10 1A` will be included. 
+
+|              Name             |Number of bytes| Value |
+|-------------------------------|---------------|-------|
+|Password Entry End             |2              |`10 1A`|
