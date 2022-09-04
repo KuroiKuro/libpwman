@@ -5,6 +5,7 @@
 pub mod crypt;
 pub mod keys;
 pub mod pwdb;
+pub mod dbfile;
 
 #[cfg(test)]
 mod tests {
