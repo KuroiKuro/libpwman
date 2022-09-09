@@ -16,7 +16,7 @@ The file header contains the following information, in order:
 
 3. Length of checksum. The length of the checksum in the next section.
 
-4. CRC32 checksum. A CRC32 checksum is used instead of a more secure hashing algorithm because the information in the header is not security-critical, so the checksum will serve more as an error check, to ensure that the file was created or copied correctly without data loss.
+4. CRC32 checksum. A CRC32 checksum is used instead of a more secure hashing algorithm because the information in the header is not security-critical, so the checksum will serve more as an error check, to ensure that the file was created or copied correctly without data loss. This checksum will be calculated from the following information (file version) to the end of the header section
 
 5. File version. This follows a `major.minor` version format (e.g. `1.2`). The version is stored as 2 bytes, where the first byte is the major version, and the second byte the minor version. As an example, version `1.2` will be represented as `02 01` in Little Endian format.
 
