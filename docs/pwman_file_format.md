@@ -42,7 +42,7 @@ The file header contains the following information, in order:
 |-------------------------------------|---------------|-------------------------|
 |File signature                       |8              |`7F 70 77 6D 61 6E 2B 2E`|
 |Endianness                           |1              |`00` or `01`             |
-|Length of checksum                   |Variable       |Variable                 |
+|Length of checksum                   |2              |Variable                 |
 |CRC32 checksum                       |4              |Variable                 |
 |File version                         |2              |Variable                 |
 |Offset to end of header section      |8              |Variable                 |
