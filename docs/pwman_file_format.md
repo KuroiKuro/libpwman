@@ -24,19 +24,23 @@ The file header contains the following information, in order:
 
 7. Offset to data (8 bytes). This will represent the offset from the beginning of the file to the data section. This is present to allow applications to be able to skip directly to the data. Can be useful if new header fields are added over time, which older application version do not know how to parse. It might seem redundant since there is already an offset to header section, however including this will allow the option of adding an entire new section in between the header and data sections if required.
 
-8. Length of plaintext string. The length of the plaintext string that will follow in the next section.
+8. Length of plaintext bytes. The length of the plaintext bytes that will follow in the next section.
 
-9. Plaintext string. This is a plaintext string that will be used by applications to test if a user-supplied password generates the right encryption key that can be used to decrypt the passwords contained in the data section.
+9. Plaintext bytes. This is plaintext bytes that will be used by applications to test if a user-supplied password generates the right encryption key that can be used to decrypt the passwords contained in the data section.
 
-10. Length of encrypted string. The length of the encrypted string that will follow in the next section.
+10. Nonce Length. This is the length of the nonce that was generated for encrypting the plaintext
 
-11. The encrypted string. The plaintext string that was encrypted with a key derived from the user password. This encrypted string will be created and saved on database creation. If the application is able to decrypt this string and verify that it matches with the plaintext string, then it is confirmed that the user has supplied the right password for the password database.
+11. The nonce. The actual nonce that was generated for encrypting the plaintext
 
-12. The length of MAC. The length of the MAC of the encrypted string.
+12. Length of encrypted bytes. The length of the encrypted bytes that will follow in the next section.
 
-13. MAC of encrypted string. The MAC Of the encrypted string to prevent tampering with the value of the encrypted string.
+13. The encrypted bytes. The plaintext bytes that was encrypted with a key derived from the user password. This encrypted bytes will be created and saved on database creation. If the application is able to decrypt this bytes and verify that it matches with the plaintext bytes, then it is confirmed that the user has supplied the right password for the password database.
 
-14. End of header section. The end of the header section will be marked with the bytes `1B 1C 20`. The offset to the end of header section will be the offset to the location containing the byte `20`. So that means that the end of header section byte marker should be included in the CRC32 checksum verification.
+14. The length of MAC. The length of the MAC of the encrypted bytes.
+
+15. MAC of encrypted bytes. The MAC Of the encrypted bytes to prevent tampering with the value of the encrypted bytes.
+
+16. End of header section. The end of the header section will be marked with the bytes `1B 1C 20`. The offset to the end of header section will be the offset to the location containing the byte `20`. So that means that the end of header section byte marker should be included in the CRC32 checksum verification.
 
 |                Name                 |Number of bytes|          Value          |
 |-------------------------------------|---------------|-------------------------|
@@ -49,6 +53,8 @@ The file header contains the following information, in order:
 |Offset to data                       |8              |Variable                 |
 |Length of plaintext string           |2              |Variable                 |
 |Plaintext string                     |Variable       |Variable                 |
+|Length of nonce                      |2              |Variable                 |
+|Nonce                                |2              |Variable                 |
 |Length of encrypted string           |2              |Variable                 |
 |Encrypted string                     |Variable       |Variable                 |
 |The length of MAC                    |2              |Variable                 |
