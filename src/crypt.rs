@@ -50,6 +50,11 @@ impl Aes256GcmCrypt {
         OsRng.fill_bytes(&mut nonce);
         nonce
     }
+    
+    /// Gets the nonce from the struct
+    pub fn get_nonce(&self) -> Aes256GcmNonce {
+        self.nonce
+    }
 }
 
 /// This trait provides an interface for structs to provide encryption and decryption operations
