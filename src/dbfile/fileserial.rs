@@ -1,5 +1,4 @@
 use std::io::Write;
-use bincode;
 
 #[derive(Debug)]
 pub enum DbFileWriteError {
@@ -9,8 +8,9 @@ pub enum DbFileWriteError {
 
 
 pub fn write_data(writer: &mut dyn Write, data: &[u8]) -> Result<(), DbFileWriteError> {
-    if let Err(_) = bincode::serialize_into(writer, &data) {
-        return Err(DbFileWriteError::FileWriteError);
-    };
-    Ok(())
+    let little_endian_data = data.reverse();
+    match writer.write_all(data) {
+        Ok(_) => Ok(()),
+        Err(_) => Err(DbFileWriteError::FileWriteError)
+    }
 }
