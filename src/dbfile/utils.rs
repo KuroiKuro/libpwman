@@ -19,7 +19,7 @@ pub fn calculate_crc32(data: &[u8]) -> u32 {
 /// the `OsRng` struct from the `rand` crate
 pub fn generate_plaintext_check(plaintext_length: usize) -> Vec<u8> {
     let mut plaintext: Vec<u8> = vec![0; plaintext_length];
-    let rng = OsRng::default();
+    let mut rng = OsRng::default();
     rng.fill_bytes(&mut plaintext);
     plaintext
 }
