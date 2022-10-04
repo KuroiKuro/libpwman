@@ -64,7 +64,7 @@ pub trait Crypt {
     /// Encrypt a plaintext string password and output the bytes
     fn encrypt_str(&self, plaintext: &str) -> Result<Vec<u8>, CryptError>;
     /// Decrypt a ciphertext string password and output the bytes
-    fn decrypt_str(&self, ciphertext: &[u8]) -> Result<Vec<u8>, CryptError>;
+    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, CryptError>;
     /// Encrypt a plaintext byte slice and output the bytes
     fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, CryptError>;
 }
@@ -86,7 +86,7 @@ impl Crypt for Aes256GcmCrypt {
     }
 
     /// Decrypts a plaintext with AES-256-GCM
-    fn decrypt_str(&self, ciphertext: &[u8]) -> Result<Vec<u8>, CryptError> {
+    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, CryptError> {
         let key = GenericArray::from_slice(&self.key);
         let cipher = Aes256Gcm::new(key);
         let nonce = Nonce::from_slice(&self.nonce);
@@ -124,7 +124,7 @@ mod tests {
 
         let nonce = crypt.nonce;
         let new_crypt = Aes256GcmCrypt::from_nonce(&key, &nonce);
-        let decrypted_ciphertext = match new_crypt.decrypt_str(&ciphertext) {
+        let decrypted_ciphertext = match new_crypt.decrypt(&ciphertext) {
             Ok(text) => text,
             Err(_) => panic!("Decryption encountered an error"),
         };

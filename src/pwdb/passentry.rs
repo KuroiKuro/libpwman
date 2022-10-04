@@ -159,7 +159,7 @@ impl PasswordEntry for PassEntry {
         // Initialize the cipher object and decrypt the password
         let nonce: Aes256GcmNonce = self.nonce;
         let crypt = Self::CryptType::from_nonce(&key, &nonce);
-        let plaintext = match crypt.decrypt_str(enc_password) {
+        let plaintext = match crypt.decrypt(enc_password) {
             Ok(data) => data,
             Err(_e) => {
                 return Err(PasswordEntryError::CryptError {
