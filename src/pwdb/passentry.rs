@@ -128,7 +128,7 @@ impl PasswordEntry for PassEntry {
         let crypt = Self::CryptType::from_nonce(&key, &self.nonce);
 
         let plaintext = password;
-        let ciphertext = match crypt.encrypt(plaintext) {
+        let ciphertext = match crypt.encrypt_str(plaintext) {
             Ok(ciphertext) => ciphertext,
             Err(_) => panic!("Encryption encountered an error"),
         };
@@ -159,7 +159,7 @@ impl PasswordEntry for PassEntry {
         // Initialize the cipher object and decrypt the password
         let nonce: Aes256GcmNonce = self.nonce;
         let crypt = Self::CryptType::from_nonce(&key, &nonce);
-        let plaintext = match crypt.decrypt(enc_password) {
+        let plaintext = match crypt.decrypt_str(enc_password) {
             Ok(data) => data,
             Err(_e) => {
                 return Err(PasswordEntryError::CryptError {

@@ -62,14 +62,14 @@ impl Aes256GcmCrypt {
 /// Different encryption algorithms may be supported by implementing this trait for them.
 pub trait Crypt {
     /// Encrypt a plaintext password and output the bytes
-    fn encrypt(&self, plaintext: &str) -> Result<Vec<u8>, CryptError>;
+    fn encrypt_str(&self, plaintext: &str) -> Result<Vec<u8>, CryptError>;
     /// Decrypt a ciphertext password and output the bytes
-    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, CryptError>;
+    fn decrypt_str(&self, ciphertext: &[u8]) -> Result<Vec<u8>, CryptError>;
 }
 
 impl Crypt for Aes256GcmCrypt {
     /// Encrypts a plaintext with AES-256-GCM
-    fn encrypt(&self, plaintext: &str) -> Result<Vec<u8>, CryptError> {
+    fn encrypt_str(&self, plaintext: &str) -> Result<Vec<u8>, CryptError> {
         let key = GenericArray::from_slice(&self.key);
         let cipher = Aes256Gcm::new(key);
         let nonce = Nonce::from_slice(&self.nonce);
@@ -81,7 +81,7 @@ impl Crypt for Aes256GcmCrypt {
     }
 
     /// Decrypts a plaintext with AES-256-GCM
-    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, CryptError> {
+    fn decrypt_str(&self, ciphertext: &[u8]) -> Result<Vec<u8>, CryptError> {
         let key = GenericArray::from_slice(&self.key);
         let cipher = Aes256Gcm::new(key);
         let nonce = Nonce::from_slice(&self.nonce);
@@ -112,14 +112,14 @@ mod tests {
 
         // Test that after encryption and decryption, we get the same value
         let plaintext = "I am Malenia, Blade of Miquella";
-        let ciphertext = match crypt.encrypt(plaintext) {
+        let ciphertext = match crypt.encrypt_str(plaintext) {
             Ok(ciphertext) => ciphertext,
             Err(_) => panic!("Encryption encountered an error"),
         };
 
         let nonce = crypt.nonce;
         let new_crypt = Aes256GcmCrypt::from_nonce(&key, &nonce);
-        let decrypted_ciphertext = match new_crypt.decrypt(&ciphertext) {
+        let decrypted_ciphertext = match new_crypt.decrypt_str(&ciphertext) {
             Ok(text) => text,
             Err(_) => panic!("Decryption encountered an error"),
         };
