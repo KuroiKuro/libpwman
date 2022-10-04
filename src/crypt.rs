@@ -61,23 +61,28 @@ impl Aes256GcmCrypt {
 /// 
 /// Different encryption algorithms may be supported by implementing this trait for them.
 pub trait Crypt {
-    /// Encrypt a plaintext password and output the bytes
+    /// Encrypt a plaintext string password and output the bytes
     fn encrypt_str(&self, plaintext: &str) -> Result<Vec<u8>, CryptError>;
-    /// Decrypt a ciphertext password and output the bytes
+    /// Decrypt a ciphertext string password and output the bytes
     fn decrypt_str(&self, ciphertext: &[u8]) -> Result<Vec<u8>, CryptError>;
+    /// Encrypt a plaintext byte slice and output the bytes
+    fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, CryptError>;
 }
 
 impl Crypt for Aes256GcmCrypt {
-    /// Encrypts a plaintext with AES-256-GCM
-    fn encrypt_str(&self, plaintext: &str) -> Result<Vec<u8>, CryptError> {
+    fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, CryptError> {
         let key = GenericArray::from_slice(&self.key);
         let cipher = Aes256Gcm::new(key);
         let nonce = Nonce::from_slice(&self.nonce);
 
-        match cipher.encrypt(nonce, plaintext.as_bytes()) {
+        match cipher.encrypt(nonce, plaintext) {
             Ok(result) => Ok(result),
             Err(_) => Err(CryptError::EncryptionError),
         }
+    }
+    /// Encrypts a plaintext with AES-256-GCM
+    fn encrypt_str(&self, plaintext: &str) -> Result<Vec<u8>, CryptError> {
+        self.encrypt(plaintext.as_bytes())
     }
 
     /// Decrypts a plaintext with AES-256-GCM
