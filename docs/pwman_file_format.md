@@ -12,7 +12,7 @@ The file can be separated into 2 sections: the header section, and the data sect
 The file header contains the following information, in order:
 1. File signature. Basically, every `.pwman` file has to start with `7F 70 77 6D 61 6E 2B 2E`.
 
-2. Endianness. With the exception of the file header bytes, which should be in Big Endian (i.e read as is), the file bytes should always be stored in Little Endian, but as way of confirmation, the byte after the file signature will be `00` to indicate that the Endianness is Little Endian. If somehow the data is stored in Big Endian, then the byte should be `01`.
+2. Endianness. With the exception of the file header bytes, which should be in Big Endian (i.e read as is), the file bytes can be stored in Little Endian or Big Endian. The byte after the file signature will be `00` to indicate that the Endianness is Little Endian, if the data is stored in Big Endian, then the byte should be `01`. As of this writing, the data will be written in Big Endian for simpler code writing.
 
 3. Length of checksum. The length of the checksum in the next section.
 
